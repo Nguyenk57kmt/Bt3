@@ -1,0 +1,53 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.css">
+</head>
+<body>
+    <div id="loginForm">
+        <input type="text" id="uid" placeholder="User ID" />
+        <input type="password" id="pwd" placeholder="Password" />
+        <div id="captchaSection" style="display:none;">
+            <img id="captchaImage" />
+            <input type="text" id="captcha" placeholder="Nhập captcha" />
+        </div>
+        <button id="loginBtn">Đăng nhập</button>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Bắt sự kiện khi bấm nút đăng nhập
+            $('#loginBtn').on('click', function () {
+                var uid = $('#uid').val();
+                var pwd = $('#pwd').val();
+                var captcha = $('#captcha').val();
+
+                $.post('api.aspx', { action: 'login', uid: uid, pwd: pwd, captcha: captcha }, function (response) {
+                    var data = JSON.parse(response);
+                    if (data.success) {
+                        $.alert(data.message);
+                    } else {
+                        $.alert(data.message);
+
+                        // Nếu đã quá 3 lần thất bại, hiển thị captcha
+                        if (data.message.includes('Captcha')) {
+                            loadCaptcha();
+                            $('#captchaSection').show();
+                        }
+                    }
+                });
+            });
+
+            // Hàm load ảnh Captcha
+            function loadCaptcha() {
+                $.post('api.aspx', { action: 'captcha' }, function (response) {
+                    var data = JSON.parse(response);
+                    $('#captchaImage').attr('src', data.captchaImage);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
